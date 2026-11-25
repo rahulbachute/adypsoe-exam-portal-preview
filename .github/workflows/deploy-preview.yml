@@ -30,6 +30,8 @@ jobs:
           path: source
       - name: Configure Pages
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - name: Stage preview site
         run: |
           mkdir -p site
