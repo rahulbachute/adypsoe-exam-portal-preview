@@ -1,0 +1,49 @@
+name: Deploy protected-tools preview
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - preview/protected-exam-tools
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-preview
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch source
+        uses: actions/checkout@v4
+        with:
+          repository: rahulbachute/adypsoe-exam-portal
+          ref: feature/protected-exam-tools
+          path: source
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Stage preview site
+        run: |
+          mkdir -p site
+          cp -R source/. site/
+          rm -rf site/.git site/.github
+          cat > site/PREVIEW-NOTICE.txt <<'EOF'
+          PREVIEW ENVIRONMENT ONLY.
+          This site is a test copy of the protected examination-tools feature.
+          Do not perform real examination operations or allocate production register numbers.
+          EOF
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
